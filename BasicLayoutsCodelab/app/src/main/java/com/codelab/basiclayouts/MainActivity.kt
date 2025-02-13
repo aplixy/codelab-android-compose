@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,12 +56,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,9 +88,16 @@ import com.codelab.basiclayouts.ui.theme.MySootheTheme
 import kotlin.math.min
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MySootheApp() }
+        setContent {
+            val windowSizeClass = calculateWindowSizeClass(this)
+            var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+            MySootheApp(windowSizeClass, selectedIndex) {
+                selectedIndex = it
+            }
+        }
     }
 }
 
@@ -239,7 +260,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 
 // Step: Bottom navigation - Material
 @Composable
-private fun SootheBottomNavigation(modifier: Modifier = Modifier) {
+private fun SootheBottomNavigation(modifier: Modifier = Modifier, onItemClick: ((Int) -> Unit)? = null, selectedIndex: Int = 0) {
     // Implement composable here
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -250,30 +271,30 @@ private fun SootheBottomNavigation(modifier: Modifier = Modifier) {
             icon = {
                 Icon(imageVector = Icons.Default.Spa, contentDescription = null)
             },
-            selected = true,
-            onClick = {  },
+            selected = selectedIndex == 0,
+            onClick = { onItemClick?.invoke(0) },
             label = {
                 Text(stringResource(R.string.bottom_navigation_home))
-            }
+            },
         )
         NavigationBarItem(
             icon = { Icon(imageVector = Icons.Default.AccountCircle, contentDescription = null) },
             label = {
                 Text(stringResource(R.string.bottom_navigation_profile))
             },
-            selected = false,
-            onClick = {}
+            selected = selectedIndex == 1,
+            onClick = { onItemClick?.invoke(1) },
         )
     }
 }
 
 // Step: MySoothe App - Scaffold
 @Composable
-fun MySootheAppPortrait() {
+fun MySootheAppPortrait(onItemClick: ((Int) -> Unit)? = null, selectedIndex: Int = 0) {
     // Implement composable here
     MySootheTheme {
         Scaffold(
-            bottomBar = { SootheBottomNavigation() }
+            bottomBar = { SootheBottomNavigation(onItemClick = onItemClick, selectedIndex = selectedIndex) }
         ) { padding ->
             Log.v("Main", "padding: $padding")
             HomeScreen(Modifier.padding(padding))
@@ -283,22 +304,57 @@ fun MySootheAppPortrait() {
 
 // Step: Bottom navigation - Material
 @Composable
-private fun SootheNavigationRail(modifier: Modifier = Modifier) {
+private fun SootheNavigationRail(modifier: Modifier = Modifier, onItemClick: ((Int) -> Unit)? = null, selectedIndex: Int = 0) {
     // Implement composable here
+    NavigationRail(
+        modifier = modifier.padding(start = 8.dp, end = 8.dp),
+        containerColor = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = modifier.fillMaxHeight(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            NavigationRailItem(
+                icon = { Icon(imageVector = Icons.Default.Spa, contentDescription = null) },
+                label = { Text(stringResource(R.string.bottom_navigation_home)) },
+                selected = selectedIndex == 0,
+                onClick = { onItemClick?.invoke(0) }
+            )
+            Spacer(modifier = modifier.height(8.dp))
+            NavigationRailItem(
+                icon = { Icon(imageVector = Icons.Default.AccountCircle, contentDescription = null) },
+                label = { Text(stringResource(R.string.bottom_navigation_profile)) },
+                selected = selectedIndex == 1,
+                onClick = { onItemClick?.invoke(1) }
+            )
+        }
+    }
 }
 
 // Step: Landscape Mode
 @Composable
-fun MySootheAppLandscape(){
+fun MySootheAppLandscape(onItemClick: ((Int) -> Unit)? = null, selectedIndex: Int = 0){
     // Implement composable here
+    Surface(color = MaterialTheme.colorScheme.background) {
+        Row {
+            SootheNavigationRail(onItemClick = onItemClick, selectedIndex = selectedIndex)
+            HomeScreen()
+        }
+    }
 }
 
 // Step: MySoothe App
 @Composable
-fun MySootheApp() {
+fun MySootheApp(windowSizeClass: WindowSizeClass, selectedIndex: Int = 0, onItemClick: ((Int) -> Unit)? = null) {
     // Implement composable here
-    MySootheTheme {
-        HomeScreen()
+    when (windowSizeClass.widthSizeClass) {
+        WindowWidthSizeClass.Compact -> {
+            MySootheAppPortrait(onItemClick, selectedIndex)
+        }
+        WindowWidthSizeClass.Expanded -> {
+            MySootheAppLandscape(onItemClick, selectedIndex)
+        }
     }
 }
 
