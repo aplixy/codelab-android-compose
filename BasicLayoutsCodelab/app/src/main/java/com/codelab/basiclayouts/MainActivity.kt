@@ -46,9 +46,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -91,7 +96,9 @@ fun SearchBar(
         placeholder = {
             Text(stringResource(R.string.placeholder_search))
         },
-        modifier = modifier.fillMaxWidth().heightIn(min = 56.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
     )
 }
 
@@ -110,7 +117,9 @@ fun AlignYourBodyElement(
             painter = painterResource(drawable),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.size(88.dp).clip(CircleShape)
+            modifier = Modifier
+                .size(88.dp)
+                .clip(CircleShape)
         )
         Text(
             text = stringResource(text),
@@ -230,6 +239,30 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 @Composable
 private fun SootheBottomNavigation(modifier: Modifier = Modifier) {
     // Implement composable here
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = modifier
+//        modifier = modifier.height(50.dp)
+    ) {
+        NavigationBarItem(
+            icon = {
+                Icon(imageVector = Icons.Default.Spa, contentDescription = null)
+            },
+            selected = true,
+            onClick = {  },
+            label = {
+                Text(stringResource(R.string.bottom_navigation_home))
+            }
+        )
+        NavigationBarItem(
+            icon = { Icon(imageVector = Icons.Default.AccountCircle, contentDescription = null) },
+            label = {
+                Text(stringResource(R.string.bottom_navigation_profile))
+            },
+            selected = false,
+            onClick = {}
+        )
+    }
 }
 
 // Step: MySoothe App - Scaffold
@@ -255,7 +288,7 @@ fun MySootheAppLandscape(){
 fun MySootheApp() {
     // Implement composable here
     MySootheTheme {
-        AlignYourBodyRow()
+        HomeScreen()
     }
 }
 
